@@ -83,7 +83,7 @@ export default {
       return hot.concat(ret)
     },
     ...mapMutations({
-      setSinger: 'SET_SINGER'
+      setSinger: 'SET_SINGER' // this.setSinger() ==>this.$store.commit('SET_SINGER')
     })
   },
   components: {
