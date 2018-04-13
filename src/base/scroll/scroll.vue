@@ -68,7 +68,7 @@ export default {
     }
   },
   watch: {
-    // 传入的data 有数据的(把dom撑开)时候调用 refresh
+    // 传入的data 有数据的(从无到有 把dom撑开)时候调用 refresh
     data () {
       setTimeout(() => {
         this.refresh()
