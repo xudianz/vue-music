@@ -64,6 +64,7 @@
         </div>
       </div>
     </transition>
+    <audio :src="currentSong.url" ref="audio"></audio>
   </div>
 </template>
 
@@ -144,6 +145,13 @@ export default {
     ...mapMutations({
       setFullScreen: 'SET_FULL_SCREEN'
     })
+  },
+  watch: {
+    currentSong () {
+      this.$nextTick(() => {
+        this.$refs.audio.play()
+      })
+    }
   }
 }
 </script>
