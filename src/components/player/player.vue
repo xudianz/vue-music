@@ -21,7 +21,7 @@
         <div class="middle">
           <div class="middle-l" ref="middleL">
             <div class="cd-wrapper" ref="cdWrapper">
-              <div class="cd" ref="imageWrapper">
+              <div class="cd" :class="cdCls" ref="imageWrapper">
                 <img ref="image" class="image" :src="currentSong.image">
               </div>
             </div>
@@ -33,13 +33,13 @@
               <i class="icon-sequence"></i>
             </div>
             <div class="icon i-left">
-              <i class="icon-prev"></i>
+              <i @click="prev" class="icon-prev"></i>
             </div>
             <div class="icon i-center">
-              <i class="icon-play"></i>
+              <i :class="playIcon" @click="togglePlaying"></i>
             </div>
             <div class="icon i-right">
-              <i class="icon-next"></i>
+              <i @click="next" class="icon-next"></i>
             </div>
             <div class="icon i-right">
               <i class="icon icon-not-favorite"></i>
@@ -51,20 +51,23 @@
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
         <div class="icon">
-          <img ref="miniImage" width="40" height="40" :src="currentSong.image">
+          <div class="imgWrapper">
+            <img ref="miniImage" :class="cdCls" :src="currentSong.image" width="40" height="40">
+          </div>
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
+          <i @click.stop="togglePlaying" :class="miniIcon"></i>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-    <audio :src="currentSong.url" ref="audio"></audio>
+    <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error"></audio>
   </div>
 </template>
 
@@ -76,11 +79,27 @@ import { prefixStyle } from 'common/js/dom'
 const transform = prefixStyle('transform')
 
 export default {
+  data () {
+    return {
+      songReady: false// 防止快速点击报错
+    }
+  },
   computed: {
+    cdCls () {
+      return this.playing ? 'play' : 'play pause'
+    },
+    playIcon () {
+      return this.playing ? 'icon-pause' : 'icon-play'
+    },
+    miniIcon () {
+      return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+    },
     ...mapGetters([
       'fullScreen',
       'playList',
-      'currentSong'
+      'currentSong',
+      'playing',
+      'currentIndex'
     ])
   },
   methods: {
@@ -130,6 +149,46 @@ export default {
       this.$refs.cdWrapper.style.transition = ''
       this.$refs.cdWrapper.style[transform] = ''
     },
+    togglePlaying () {
+      if (!this.songReady) {
+        return
+      }
+      this.setPlayingState(!this.playing)
+    },
+    next () {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex + 1
+      if (index === this.playList.length) {
+        index = 0
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    prev () {
+      if (!this.songReady) {
+        return
+      }
+      let index = this.currentIndex - 1
+      if (index === -1) {
+        index = this.playList.length - 1
+      }
+      this.setCurrentIndex(index)
+      if (!this.playing) {
+        this.togglePlaying()
+      }
+      this.songReady = false
+    },
+    ready () {
+      this.songReady = true
+    },
+    error () {
+
+    },
     _getPosAndScale () {
       // 获取位置偏移
       const targetWidth = 40
@@ -143,13 +202,22 @@ export default {
       return {x, y, scale}
     },
     ...mapMutations({
-      setFullScreen: 'SET_FULL_SCREEN'
+      setFullScreen: 'SET_FULL_SCREEN',
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX'
     })
   },
   watch: {
     currentSong () {
       this.$nextTick(() => {
         this.$refs.audio.play()
+      })
+    },
+    playing (newPlaying) {
+      const audio = this.$refs.audio
+      this.$nextTick(() => {
+        // console.log(newPlaying) ===> true false
+        newPlaying ? audio.play() : audio.pause()
       })
     }
   }
@@ -229,7 +297,13 @@ export default {
           .cd
             width: 100%
             height: 100%
+            box-sizing: border-box
+            border: 10px solid rbga(255, 255, 255, 0.1)
             border-radius: 50%
+            &.play
+              animation: rotate 20s linear infinite
+            &.pause
+              animation-play-state: paused
             .image
               position: absolute
               left: 0
@@ -239,8 +313,6 @@ export default {
               box-sizing: border-box
               border-radius: 50%
               border: 10px solid rgba(255, 255, 255, 0.1)
-            .play
-              animation: rotate 20s linear infinite
         .playing-lyric-wrapper
           width: 80%
           margin: 30px auto 0 auto
