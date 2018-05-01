@@ -1,8 +1,13 @@
 <template>
-  <div class="progress-bar" ref="progressBar">
+  <div class="progress-bar" ref="progressBar" @click="progressClick">
     <div class="bar-inner">
       <div class="progress" ref="progress"></div>
-      <div class="progress-btn-wrapper" ref="progressBtn">
+      <div class="progress-btn-wrapper"
+        ref="progressBtn"
+        @touchstart.prevent="progressTouchStart"
+        @touchmove.prevent="progressTouchMove"
+        @touchend="progressEnd"
+      >
         <div class="progress-btn"></div>
       </div>
     </div>
@@ -22,14 +27,53 @@ export default {
       default: 0
     }
   },
+  created () {
+    this.touch = {}
+  },
+  methods: {
+    progressTouchStart (e) {
+      this.touch.initiated = true
+      this.touch.startX = e.touches[0].pageX
+      this.touch.left = this.$refs.progress.clientWidth
+    },
+    progressTouchMove (e) {
+      if (!this.touch.initiated) {
+        return
+      }
+      const deltaX = e.touches[0].pageX - this.touch.startX
+      const offsetWidth = Math.min(this.$refs.progressBar.clientWidth - progressBtnWidth, Math.max(0, this.touch.left + deltaX))
+      this._offset(offsetWidth)
+    },
+    progressEnd () {
+      this.touch.initiated = false
+      this._triggerPercent()
+    },
+    progressClick (e) {
+      const rect = this.$refs.progress.getBoundingClientRect()
+      const offsetWidth = e.pageX - rect.left
+      this._offset(offsetWidth)
+      // 当点击progressBar的时候 e.offsetX获取不正确
+      // this._offset(e.offsetX)
+      this._triggerPercent()
+    },
+    _triggerPercent () {
+      const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+      const percent = this.$refs.progress.clientWidth / barWidth
+
+      this.$emit('percentChange', percent)
+    },
+    _offset (offsetWidth) {
+      this.$refs.progress.style.width = `${offsetWidth}px`
+      this.$refs.progressBtn.style[transfrom] = `translate3d(${offsetWidth}px, 0, 0)`
+    }
+  },
   watch: {
     percent (newPercent) {
-      // newPercent 歌曲播放比例
-      if (newPercent >= 0) {
+      // newPercent 歌曲播放比例 !this.touch.initiated==>未拖动
+      if (newPercent >= 0 && !this.touch.initiated) {
         const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
         const offsetWidth = newPercent * barWidth
-        this.$refs.progress.style.width = `${offsetWidth}px`
-        this.$refs.progressBtn.style[transfrom] = `translate3d(${offsetWidth}px, 0, 0)`
+        this._offset(offsetWidth)
       }
     }
   }
