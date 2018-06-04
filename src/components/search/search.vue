@@ -16,8 +16,9 @@
       </div>
     </div>
     <div class="search-result" v-show="query">
-      <suggest :query="query"></suggest>
+      <suggest @listScroll="blurInput" :query="query"></suggest>
     </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -47,6 +48,9 @@ export default {
     },
     addQuery (query) {
       this.$refs.searchBox.setQuery(query) // 调用子组件search-box里的方法
+    },
+    blurInput () {
+      this.$refs.searchBox.blur()
     },
     onQueryChange (query) {
       this.query = query
