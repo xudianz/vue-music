@@ -9,7 +9,8 @@ const state = {
   mode: playMode.sequence,
   currentIndex: -1,
   disc: {},
-  topList: {}// 9-3榜单详情页
+  topList: {}, // 9-3榜单详情页
+  searchHistory: []
 }
 
 export default state

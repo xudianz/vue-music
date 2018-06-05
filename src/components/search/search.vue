@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="search-result" v-show="query">
-      <suggest @listScroll="blurInput" :query="query"></suggest>
+      <suggest @select="saveSearch" @listScroll="blurInput" :query="query"></suggest>
     </div>
     <router-view></router-view>
   </div>
@@ -54,6 +54,9 @@ export default {
     },
     onQueryChange (query) {
       this.query = query
+    },
+    saveSearch () {
+      
     }
   },
   components: {
