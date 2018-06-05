@@ -1,6 +1,7 @@
 import * as types from './mutation-types' // 多次提交mutation 往往要封装一个action
 import { playMode } from 'common/js/config'
 import { shuffle } from 'common/js/util'
+import { saveSearch } from 'common/js/cache'
 
 function findIndex (list, song) {
   return list.findIndex((item) => {
@@ -73,5 +74,5 @@ export const insertSong = function ({commit, state}, song) {
 }
 
 export const savaSearchHistory = function ({commit}, query) {
-
+  commit(types.SET_SEARCH_HISTORY, saveSearch(query))
 }
