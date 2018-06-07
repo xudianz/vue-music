@@ -4,24 +4,24 @@
       <div class="list-wrapper" @click.stop>
         <div class="list-header">
           <h1 class="title">
-            <i class="icon"></i>
+            <i class="icon" :class="iconMode" @click="changeMode"></i>
             <span class="text"></span>
-            <span class="clear"><i class="icon-clear"></i></span>
+            <span class="clear" @click="showConfirm"><i class="icon-clear"></i></span>
           </h1>
         </div>
         <scroll :data="sequenceList" ref="listContent" class="list-content">
-          <ul>
-            <li ref="listItem" class="item" @click="selectItem(item, index)" v-for="(item, index) in sequenceList" :key="index">
+          <transition-group name="list" tag="ul">
+            <li :key="item.id" ref="listItem" class="item" @click="selectItem(item, index)" v-for="(item, index) in sequenceList">
               <i class="current" :class="getCurrentIcon(item)"></i>
               <span class="text">{{item.name}}</span>
               <span class="like">
                 <i class="icon-not-favorite"></i>
               </span>
-              <span class="delete" @click="deleteOne(item)">
+              <span class="delete" @click.stop="deleteOne(item)">
                 <i class="icon-delete"></i>
               </span>
             </li>
-          </ul>
+          </transition-group>
         </scroll>
         <div class="list-operate">
           <div class="add">
@@ -33,28 +33,33 @@
           <span>关闭</span>
         </div>
       </div>
+      <confirm @confirm="confirmClear" text="是否清空播放列表" confirmBtnText="清空" ref="confirm"></confirm>
     </div>
   </transition>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapActions } from 'vuex' /* mapGetters, mapMutations, */
 import { playMode } from 'common/js/config'
 import Scroll from 'base/scroll/scroll'
+import Confirm from 'base/confirm/confirm'
+import { playerMixin } from 'common/js/mixin'
 
 export default {
+  mixins: [playerMixin],
   data () {
     return {
       showFlag: false
     }
   },
   computed: {
-    ...mapGetters([
-      'sequenceList',
-      'currentSong',
-      'playList',
-      'mode'
-    ])
+    // minxin 引入部分
+    // ...mapGetters([
+    //   'sequenceList',
+    //   'currentSong',
+    //   'playList',
+    //   'mode'
+    // ])
   },
   methods: {
     show () {
@@ -88,11 +93,28 @@ export default {
       })
       this.$refs.listContent.scrollToElement(this.$refs.listItem[index], 300)
     },
-    deleteOne (item) {},
-    ...mapMutations({
-      setCurrentIndex: 'SET_CURRENT_INDEX',
-      setPlayingState: 'SET_PLAYING_STATE'
-    })
+    deleteOne (item) {
+      this.deleteSong(item)
+      if (!this.playList.length) {
+        this.hide()
+      }
+    },
+    showConfirm () {
+      this.$refs.confirm.show()
+    },
+    confirmClear () {
+      this.deleteSongList()
+      this.hide()
+    },
+    // minxin 引入部分
+    // ...mapMutations({
+    //   setCurrentIndex: 'SET_CURRENT_INDEX',
+    //   setPlayingState: 'SET_PLAYING_STATE'
+    // }),
+    ...mapActions([
+      'deleteSong',
+      'deleteSongList'
+    ])
   },
   watch: {
     currentSong (newSong, oldSong) {
@@ -103,7 +125,8 @@ export default {
     }
   },
   components: {
-    Scroll
+    Scroll,
+    Confirm
   }
 }
 </script>
