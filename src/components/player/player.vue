@@ -110,7 +110,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import animations from 'create-keyframe-animation'
 import { prefixStyle } from 'common/js/dom'
 import ProgressBar from 'base/progress-bar/progress-bar'
@@ -278,7 +278,8 @@ export default {
       this.songReady = false
     },
     ready () {
-      this.songReady = true
+      this.songReady = true // 音乐可以播放的时候 audio canplay
+      this.savePlayHistory(this.currentSong)
     },
     error () {
       this.songReady = true
@@ -428,7 +429,10 @@ export default {
       setCurrentIndex: 'SET_CURRENT_INDEX',
       setPlayMode: 'SET_PLAY_MODE',
       setPlayList: 'SET_PLAYLIST'
-    })
+    }),
+    ...mapActions([
+      'savePlayHistory'
+    ])
   },
   watch: {
     currentSong (newSong, oldSong) {
