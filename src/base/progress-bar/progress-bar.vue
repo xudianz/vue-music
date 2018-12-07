@@ -56,6 +56,14 @@ export default {
       // this._offset(e.offsetX)
       this._triggerPercent()
     },
+    setProgressOffset (percent) {
+      // percent 歌曲播放比例 !this.touch.initiated==>未拖动
+      if (percent >= 0 && !this.touch.initiated) {
+        const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
+        const offsetWidth = percent * barWidth
+        this._offset(offsetWidth)
+      }
+    },
     _triggerPercent () {
       const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
       const percent = this.$refs.progress.clientWidth / barWidth
@@ -69,12 +77,7 @@ export default {
   },
   watch: {
     percent (newPercent) {
-      // newPercent 歌曲播放比例 !this.touch.initiated==>未拖动
-      if (newPercent >= 0 && !this.touch.initiated) {
-        const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
-        const offsetWidth = newPercent * barWidth
-        this._offset(offsetWidth)
-      }
+      this.setProgressOffset(newPercent)
     }
   }
 }

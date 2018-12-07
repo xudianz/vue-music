@@ -1,4 +1,4 @@
-import { getLyric } from 'api/song'
+import { getLyric, getSongsUrl } from 'api/song'
 import { ERR_OK } from 'api/config'
 import { Base64 } from 'js-base64'
 
@@ -42,7 +42,8 @@ export function createSong (musicData) {
     album: musicData.albumname,
     duration: musicData.interval,
     image: `https://y.gtimg.cn/music/photo_new/T002R300x300M000${musicData.albummid}.jpg?max_age=2592000`,
-    url: `http://dl.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
+    // url: `http://dl.stream.qqmusic.qq.com/C100${musicData.songmid}.m4a?fromtag=32`
+    url: musicData.url
   })
 }
 
@@ -55,4 +56,24 @@ export function filterSinger (singer) {
     ret.push(s.name)
   })
   return ret.join('/')
+}
+
+export function isValidMusic (musicData) {
+  return musicData.songid && musicData.albummid && (!musicData.pay || musicData.pay.payalbumprice === 0)
+}
+
+export function processSongUrl (songs) {
+  return getSongsUrl(songs).then((res) => {
+    if (res.code === ERR_OK) {
+      let urlMid = res.url_mid
+      if (urlMid && urlMid.code === ERR_OK) {
+        let midUrlInfo = urlMid.data.midurlinfo
+        midUrlInfo.forEach((info, index) => {
+          let song = songs[index]
+          song.url = `http://dl.stream.qqmusic.qq.com/${info.purl}`
+        })
+      }
+    }
+    return songs
+  })
 }

@@ -15,6 +15,8 @@ const PORT = process.env.PORT && Number(process.env.PORT)
 
 //vue-music start
 const axios = require('axios')
+const bodyParser = require('body-parser')
+
 const express = require('express')
 var app = express()
 
@@ -53,6 +55,9 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     },
     //vue-music
     before (app) {
+      app.use(bodyParser.urlencoded({extended: true}))
+      const queryString = require('querystring')
+
       app.get('/api/getDiscList', function(req, res) {
         const url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
         axios.get(url, {
@@ -109,6 +114,20 @@ const devWebpackConfig = merge(baseWebpackConfig, {
           res.json(ret)
         }).catch((e) => {
           cosnole.log(e)
+        })
+      })
+      app.post('/api/getPurlUrl', bodyParser.json(), function (req, res) {
+        const url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        axios.post(url, req.body, {
+          headers: {
+            referer: 'https://y.qq.com/',
+            origin: 'https://y.qq.com',
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
+        }).then((response) => {
+          res.json(response.data)
+        }).catch(e => {
+          console.log(e)
         })
       })
     }

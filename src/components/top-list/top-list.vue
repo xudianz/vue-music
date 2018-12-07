@@ -9,7 +9,7 @@ import MusicList from 'components/music-list/music-list'
 import { mapGetters } from 'vuex'
 import { getMusicList } from 'api/rank'
 import { ERR_OK } from 'api/config'
-import { createSong } from 'common/js/song'
+import { createSong, isValidMusic, processSongUrl } from 'common/js/song'
 
 export default {
   data () {
@@ -43,7 +43,10 @@ export default {
       }
       getMusicList(this.topList.id).then((res) => {
         if (res.code === ERR_OK) {
-          this.songs = this._normalizeSongs(res.songlist)
+          // this.songs = this._normalizeSongs(res.songlist)
+          processSongUrl(this._normalizeSongs(res.songlist)).then((songs) => {
+            this.songs = songs
+          })
         }
       })
     },
@@ -51,7 +54,7 @@ export default {
       let ret = []
       list.forEach(item => {
         const musicData = item.data
-        if (musicData.songid && musicData.albumid) {
+        if (isValidMusic(musicData)) {
           ret.push(createSong(musicData))
         }
       })
