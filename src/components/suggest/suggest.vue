@@ -124,7 +124,7 @@ export default {
     },
     _checkMore (data) {
       const song = data.song
-      if (!song.list.length || (song.curnum + song.curpage * perpage) >= song.totalnum) {
+      if (!song.list.length || (song.curnum + (song.curpage - 1) * perpage) >= song.totalnum) {
         this.hasMore = false
       }
     },
@@ -159,8 +159,11 @@ export default {
     ])
   },
   watch: {
-    query () {
-      this.search()
+    query (newQuery) {
+      if (!newQuery) {
+        return
+      }
+      this.search(newQuery)
     }
   },
   components: {

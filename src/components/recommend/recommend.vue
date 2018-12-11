@@ -59,6 +59,11 @@ export default {
       this._getDiscList()
     }, 300)
   },
+  activated () {
+    setTimeout(() => {
+      this.$refs.slider && this.$refs.slider.refresh()
+    }, 20)
+  },
   methods: {
     handlePlayList (playList) {
       const bottom = playList.length > 0 ? '60px' : ''
